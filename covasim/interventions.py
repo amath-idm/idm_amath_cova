@@ -8,7 +8,8 @@ from . import misc as cvm
 
 
 
-__all__ = ['Intervention', 'dynamic_pars', 'sequence', 'change_beta', 'test_num', 'test_prob', 'contact_tracing']
+__all__ = ['Intervention', 'dynamic_pars', 'sequence', 'change_beta', 'test_num', 'test_prob', 'contact_tracing',
+           'beta_weighted_contact_tracing']
 
 
 #%% Generic intervention classes
@@ -377,4 +378,63 @@ class contact_tracing(Intervention):
         if len(just_diagnsed_inds): # If there are any just-diagnosed people, go trace their contacts
             sim.people.trace(just_diagnsed_inds, self.trace_probs, self.trace_time)
 
+        return
+
+
+class beta_weighted_contact_tracing(Intervention):
+    """
+    Contact tracing with probability weighed by beta and beta_layer values compared to their original value at t=0.
+    This intervention is supposed to mimic the effect of reducing contacts via beta reduction.  It is not appropariate
+    for when the change_beta intervention encapsulates other changes in transmission behavior (e.g. hand washing, PPE)
+
+    Behavior looks strange with clustered populations.
+
+    Args:
+        trace_probs (dict): probability per layer a contact is trace
+        trace_time (dict): number of day per layer it takes to trace a contact
+        start_day (int): day to start intervention
+
+    See also:
+        covasim.change_beta
+   """
+    def __init__(self, trace_probs, trace_time, start_day=0):
+        super().__init__()
+        self.trace_probs = trace_probs
+        self.trace_time = trace_time
+        self.start_day = start_day
+        self.orig_beta = None
+        self.orig_beta_layer = None
+
+    def apply(self, sim):
+        # if this is the first time calling, determine the original beta values per layer
+        if self.orig_beta is None:
+            self.orig_beta = sc.dcp(sim['beta'])
+            self.orig_beta_layer = sc.dcp(sim['beta_layer'])
+
+         # check the timeline to start
+        t = sim.t
+        if t < self.start_day:
+            return
+
+        # get people just diagnosed to trace
+        just_diagnsed_inds = cv.true(sim.people.diagnosed & (sim.people.date_diagnosed == t-1)) # Diagnosed last time step, time to trace
+        if len(just_diagnsed_inds) == 0:
+            return
+
+        # look at the current beta layers
+        curr_betas = {k: sim['beta_layer'][k] for k in sim['beta_layer'].keys()}
+
+        # calculate current relative scaling of beta
+        overall = sim['beta']/self.orig_beta
+        trace_probs = {k: (v*curr_betas[k]/self.orig_beta_layer[k]*overall) for k, v in self.trace_probs.items()}
+
+        if len(just_diagnsed_inds): # If there are any just-diagnosed people, go trace their contacts
+            sim.people.trace(just_diagnsed_inds, trace_probs, self.trace_time)
+        return
+
+    def plot(self, sim, ax):
+        ''' Plot vertical lines for starting beta weighted contact tracing '''
+        ylims = ax.get_ylim()
+        for day in [self.start_day]:
+            ax.plot([day]*2, ylims, '--', c=[0,0,0])
         return
