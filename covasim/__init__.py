@@ -18,3 +18,4 @@ from .interventions import *
 from .sim           import *
 from .run           import *
 from .plotting      import *
+from .analyses      import *
