@@ -18,7 +18,7 @@ if __name__ == '__main__':
     
 
     pars = sc.objdict(
-        pop_size  = 12000,
+        pop_size  = 17000,
         n_days    = 1,
         # rand_seed = 1,
         # pop_type  = 'hybrid',
