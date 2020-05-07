@@ -337,6 +337,8 @@ class Sim(cvb.BaseSim):
         beta         = cvd.default_float(self['beta'])
         asymp_factor = cvd.default_float(self['asymp_factor'])
         diag_factor  = cvd.default_float(self['diag_factor'])
+        sev_factor   = cvd.default_float(self['sev_factor'])
+        crit_factor  = cvd.default_float(self['crit_factor'])
         frac_time    = cvd.default_float(self['viral_dist']['frac_time'])
         load_ratio   = cvd.default_float(self['viral_dist']['load_ratio'])
         high_cap     = cvd.default_float(self['viral_dist']['high_cap'])
@@ -355,10 +357,12 @@ class Sim(cvb.BaseSim):
             rel_sus    = people.rel_sus
             symp       = people.symptomatic
             diag       = people.diagnosed
+            sev        = people.severe
+            crit       = people.critical
             quar       = people.quarantined
             quar_eff   = cvd.default_float(self['quar_eff'][lkey])
             beta_layer = cvd.default_float(self['beta_layer'][lkey])
-            rel_trans, rel_sus = cvu.compute_trans_sus(rel_trans, rel_sus, beta_layer, viral_load, symp, diag, quar, asymp_factor, diag_factor, quar_eff)
+            rel_trans, rel_sus = cvu.compute_trans_sus(rel_trans, rel_sus, beta_layer, viral_load, symp, diag, quar, sev, crit, asymp_factor, diag_factor, quar_eff, sev_factor, crit_factor)
 
             # Calculate actual transmission
             target_inds, edge_inds = cvu.compute_infections(beta, sources, targets, betas, rel_trans, rel_sus) # Calculate transmission!

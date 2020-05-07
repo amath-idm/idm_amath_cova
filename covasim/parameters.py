@@ -52,6 +52,8 @@ def make_pars(set_prognoses=False, prog_by_age=True, **kwargs):
     # Efficacy of protection measures
     pars['asymp_factor'] = 1.0 # Multiply beta by this factor for asymptomatic cases; no statistically significant difference in transmissibility: https://www.sciencedirect.com/science/article/pii/S1201971220302502
     pars['diag_factor']  = 0.2 # Multiply beta by this factor for diganosed cases; based on intervention strength
+    pars['sev_factor']   = 1.0 # Multiply beta by this factor for severe cases; based on intervention strength
+    pars['crit_factor']  = 1.0 # Multiply beta by this factor for critical cases; based on intervention strength
     pars['quar_eff']     = None # Quarantine multiplier on transmissibility and susceptibility; set below
     pars['quar_period']  = 14  # Number of days to quarantine for; assumption based on standard policies
 
