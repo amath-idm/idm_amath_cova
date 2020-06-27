@@ -112,8 +112,9 @@ def test_baseline():
 
         df['diff']   = diff
         df['ratio']  = ratio
+        # Rounding column values while excluding strings
         for col in ['old', 'new', 'diff', 'ratio']:
-            df[col] = df[col].round(decimals=3)
+            df[col] = [round(number, ndigits=3) if type(number) == 'float' else number for number in df[col]]
         df['change'] = change
         errormsg += str(df)
 
